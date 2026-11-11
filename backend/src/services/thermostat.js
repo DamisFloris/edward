@@ -68,7 +68,10 @@ export async function handleCallback({ code, state }) {
   const saved = secrets.get("netatmo_oauth_state");
   secrets.delete("netatmo_oauth_state");
   if (!saved || saved.state !== state || Date.now() - saved.at > 15 * 60_000) throw new Error("Stato OAuth non valido o scaduto");
-  await tokenRequest({ grant_type: "authorization_code", code, redirect_uri: saved.redirect, scope: SCOPES });
+  const tokens = await tokenRequest({ grant_type: "authorization_code", code, redirect_uri: saved.redirect, scope: SCOPES });
+  // il login ha la precedenza sul token del .env attuale; un token NUOVO messo nel .env in futuro tornerà a valere
+  if (config.netatmoRefreshToken) secrets.set(TOKEN_KEY, { ...tokens, envSeed: config.netatmoRefreshToken });
+  secrets.delete("netatmo_home");
 }
 
 export function disconnect() {

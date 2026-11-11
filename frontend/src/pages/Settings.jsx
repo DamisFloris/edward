@@ -2,6 +2,39 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api.js";
 import { listVoices, speak } from "../lib/tts.js";
 
+/** Stato reale del collegamento (prova a leggere il termostato) e pulsante per collegarsi con il login. */
+function ThermostatLink() {
+  const [st, setSt] = useState({ loading: true });
+  useEffect(() => {
+    fetch("/api/thermostat")
+      .then(async (r) => ({ ok: r.ok, data: await r.json().catch(() => ({})) }))
+      .then(({ ok, data }) => setSt(ok ? data : { error: data.error || "Errore sconosciuto" }))
+      .catch((e) => setSt({ error: e.message }));
+  }, []);
+
+  if (st.loading) return <p className="muted small">Controllo il collegamento…</p>;
+  const ok = !st.error && st.connected && st.rooms?.length;
+  return (
+    <>
+      {ok && (
+        <p>
+          ✔ Collegato a <strong>{st.home}</strong>:{" "}
+          {st.rooms.map((r) => `${r.name} ${r.measured ?? "–"}°`).join(", ")}
+        </p>
+      )}
+      {st.error && <p className="error-text small">Il termostato non risponde: {st.error}</p>}
+      {!ok && !st.error && <p className="muted small">Non ancora collegato.</p>}
+      <p className="muted small">
+        Il collegamento con il login apre la pagina di Netatmo. Lì entri con l'account che usi nell'app Home + Control
+        e autorizzi Edward. È un'alternativa al token del .env.
+      </p>
+      <a className={`btn ${ok ? "ghost" : "primary"}`} href="/api/thermostat/auth">
+        {ok ? "Ricollega" : "Collega con il login Home + Control"}
+      </a>
+    </>
+  );
+}
+
 export default function Settings({ settings, onSaved, health }) {
   const [s, setS] = useState(settings);
   const [query, setQuery] = useState("");
@@ -226,22 +259,7 @@ export default function Settings({ settings, onSaved, health }) {
             NETATMO_CLIENT_ID e NETATMO_CLIENT_SECRET nel file .env. Istruzioni nel README.
           </p>
         )}
-        {health?.thermostat?.configured && !health.thermostat.connected && (
-          <a className="btn primary" href="/api/thermostat/auth">
-            Collega il termostato
-          </a>
-        )}
-        {health?.thermostat?.connected && (
-          <p>
-            ✔ Collegato.{" "}
-            <button
-              className="btn ghost danger"
-              onClick={() => fetch("/api/thermostat/disconnect", { method: "POST" }).then(() => location.reload())}
-            >
-              Scollega
-            </button>
-          </p>
-        )}
+        {health?.thermostat?.configured && <ThermostatLink />}
       </section>
 
       <section className="card">
