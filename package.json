@@ -15,6 +15,11 @@
     "dev": "npm run dev --workspace backend & npm run dev --workspace frontend",
     "build": "npm run build --workspace frontend",
     "start": "npm run start --workspace backend",
-    "nightly": "npm run nightly --workspace backend"
+    "nightly": "npm run nightly --workspace backend",
+    "up": "docker compose up -d --build",
+    "restart": "docker compose up -d --force-recreate edward",
+    "logs": "docker compose logs -f --tail=100 edward",
+    "down": "docker compose down",
+    "news": "docker compose exec edward node --disable-warning=ExperimentalWarning backend/src/scripts/run-nightly.js"
   }
 }

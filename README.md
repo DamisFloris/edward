@@ -52,12 +52,19 @@ docker compose up -d
 
 Apri **https://raspberrypi.local:3000** e accetta l'avviso sul certificato (è self-signed, creato al primo avvio).
 
-| Cosa | Comando |
+| Cosa | Comando rapido | Equivalente Docker |
+|---|---|---|
+| Avviare / ricostruire | `npm run up` | `docker compose up -d --build` |
+| Riavviare rileggendo il `.env` | `npm run restart` | `docker compose up -d --force-recreate edward` |
+| Log in tempo reale (Ctrl+C per uscire) | `npm run logs` | `docker compose logs -f --tail=100 edward` |
+| Spegnere tutto | `npm run down` | `docker compose down` |
+| Aggiornare | `git pull && npm run up` | |
+
+I comandi rapidi richiedono npm sul Pi (`sudo apt install -y npm`). Altrimenti usa gli equivalenti Docker.
+
+| Altro | Comando |
 |---|---|
-| Log | `docker compose logs -f edward` |
-| Aggiornare | `git pull && docker compose up -d --build` |
-| Generare il giornale adesso | `docker compose exec edward node backend/src/scripts/run-nightly.js` |
-| Fermare | `docker compose down` |
+| Generare il giornale adesso | `npm run news`, oppure `docker compose exec edward node backend/src/scripts/run-nightly.js` |
 | Backup dei dati | `docker run --rm -v edward_edward-data:/d -v $PWD:/b alpine tar czf /b/edward-data.tgz -C /d .` |
 
 Cosa fa da solo `docker compose up -d`:
