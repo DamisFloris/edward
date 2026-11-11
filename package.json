@@ -1,0 +1,20 @@
+{
+  "name": "edward",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Edward - assistente personale AI (giornale mattutino, meteo, calendario, voce) per Raspberry Pi",
+  "type": "module",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace backend & npm run dev --workspace frontend",
+    "build": "npm run build --workspace frontend",
+    "start": "npm run start --workspace backend",
+    "nightly": "npm run nightly --workspace backend"
+  }
+}

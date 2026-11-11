@@ -1,0 +1,58 @@
+# Edward + SearXNG con un solo comando:
+#   cp .env.example .env && nano .env      (metti le tue chiavi API)
+#   docker compose up -d
+# Poi apri https://raspberrypi.local:3000 (accetta l'avviso sul certificato).
+# Log: docker compose logs -f edward   ·   Aggiornare: git pull && docker compose up -d --build
+
+services:
+  edward:
+    build: .
+    image: edward:latest
+    container_name: edward
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      SEARXNG_URL: http://searxng:8080
+      HTTPS: ${HTTPS:-auto}              # certificato self-signed creato al primo avvio
+      CERT_HOSTS: ${CERT_HOSTS:-raspberrypi.local}
+    ports:
+      - "${EDWARD_PORT:-3000}:3000"
+    volumes:
+      - edward-data:/app/backend/data    # calendario, giornali, token, certificati
+    depends_on:
+      - searxng
+
+  # Prepara la configurazione di SearXNG: genera la chiave segreta una sola volta e la conserva nel volume.
+  searxng-init:
+    image: alpine:3.20
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - |
+        [ -s /out/secret ] || head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' > /out/secret
+        sed "s/__SEARXNG_SECRET__/$$(cat /out/secret)/" /in/settings.yml > /out/settings.yml
+        chmod 644 /out/settings.yml
+    volumes:
+      - ./deploy/searxng/settings.yml:/in/settings.yml:ro
+      - searxng-config:/out
+
+  searxng:
+    image: searxng/searxng:latest
+    container_name: searxng
+    restart: unless-stopped
+    depends_on:
+      searxng-init:
+        condition: service_completed_successfully
+    environment:
+      SEARXNG_BASE_URL: http://localhost:8888/
+    ports:
+      - "127.0.0.1:8888:8080"            # solo dal Raspberry stesso (utile per i test)
+    volumes:
+      - searxng-config:/etc/searxng
+
+volumes:
+  edward-data:
+  searxng-config:

@@ -1,0 +1,23 @@
+# Servizio systemd per avviare Edward all'accensione del Raspberry Pi.
+# Installazione:
+#   sudo cp deploy/edward.service /etc/systemd/system/edward.service
+#   (modifica User e WorkingDirectory se necessario)
+#   sudo systemctl daemon-reload && sudo systemctl enable --now edward
+# Log:  journalctl -u edward -f
+
+[Unit]
+Description=Edward - assistente personale AI
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/edward
+ExecStart=/usr/bin/npm start
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

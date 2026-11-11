@@ -1,0 +1,23 @@
+node_modules/
+frontend/dist/
+
+# segreti: chiavi API, token, certificati
+.env
+.env.*
+!.env.example
+certs/
+*.pem
+*.key
+*.crt
+
+# dati personali (calendario, token Netatmo, giornali)
+backend/data/
+
+# modelli vocali (pesanti, si scaricano sul Pi)
+models/
+*.bin
+*.onnx
+*.onnx.json
+
+*.log
+.DS_Store

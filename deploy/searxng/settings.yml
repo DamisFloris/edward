@@ -1,0 +1,20 @@
+# Configurazione minima di SearXNG per Edward.
+# Abilita il formato JSON (necessario a Edward) e disattiva il limiter (uso solo locale).
+use_default_settings:
+  engines:
+    remove:   # motori per la rete Tor: qui non servono e riempiono il log di errori
+      - ahmia
+      - torch
+
+server:
+  # segnaposto: al primo avvio docker compose genera una chiave casuale e la conserva nel volume searxng-config
+  secret_key: "__SEARXNG_SECRET__"
+  limiter: false
+  image_proxy: false
+
+search:
+  safe_search: 0
+  default_lang: "it-IT"
+  formats:
+    - html
+    - json

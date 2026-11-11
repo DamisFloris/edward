@@ -1,0 +1,16 @@
+# SearXNG per Edward: metamotore di ricerca locale, gratuito.
+# Prima volta: echo "SEARXNG_SECRET=$(openssl rand -hex 32)" > .env   (file escluso da git)
+# Avvio:  cd deploy/searxng && docker compose up -d
+# Test:   curl "http://localhost:8888/search?q=viareggio&format=json" | head -c 300
+services:
+  searxng:
+    image: searxng/searxng:latest
+    container_name: searxng
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8888:8080"   # raggiungibile solo dal Raspberry stesso
+    volumes:
+      - ./settings.yml:/etc/searxng/settings.yml:ro
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8888/
+      - SEARXNG_SECRET=${SEARXNG_SECRET:?crea deploy/searxng/.env con SEARXNG_SECRET}
