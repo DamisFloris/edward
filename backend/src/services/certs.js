@@ -7,7 +7,7 @@ import path from "node:path";
 
 const isIp = (h) => /^\d+\.\d+\.\d+\.\d+$/.test(h);
 
-/** Crea cert.pem e key.pem in `dir`. `extraHosts`: nomi o IP con cui raggiungerai Edward (es. raspberrypi.local). */
+/** Crea cert.pem e key.pem in `dir`. `extraHosts`: nomi o IP con cui raggiungerai Edward (es. edward.local). */
 export function makeCerts(dir, extraHosts = []) {
   fs.mkdirSync(dir, { recursive: true });
   const host = os.hostname();

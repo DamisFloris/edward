@@ -38,19 +38,26 @@ edward/
 Ti servono **Raspberry Pi OS a 64 bit** e Docker. Edward e SearXNG partono insieme e ripartono da soli a ogni accensione.
 
 ```bash
-# 1. Docker (una volta sola)
+# 1. nome in rete: il Pi diventa raggiungibile come edward.local (una volta sola)
+sudo hostnamectl set-hostname edward
+sudo sed -i 's/127.0.1.1.*/127.0.1.1\tedward/' /etc/hosts   # l'avviso "unable to resolve host" qui è normale
+sudo reboot
+
+# 2. Docker (una volta sola)
 curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER          # poi esci e rientra
 
-# 2. progetto e chiavi
+# 3. progetto e chiavi (senza sudo, così i file restano del tuo utente)
 git clone <url-repo> ~/edward && cd ~/edward
-cp .env.example .env && nano .env      # oppure copia il tuo .env dal Mac
+cp .env.example .env && nano .env      # oppure dal Mac: scp .env <utente>@edward.local:~/edward/.env
 
-# 3. via
+# 4. via
 docker compose up -d
 ```
 
-Apri **https://raspberrypi.local:3000** e accetta l'avviso sul certificato (è self-signed, creato al primo avvio).
+`.local` è il suffisso che i dispositivi di casa risolvono da soli (mDNS), senza configurare un DNS: funziona su Mac, iPhone, Windows e Linux; su alcuni Android serve l'IP.
+
+Apri **https://edward.local** e accetta l'avviso sul certificato (è self-signed, creato al primo avvio).
 
 | Cosa | Comando rapido | Equivalente Docker |
 |---|---|---|
@@ -71,12 +78,12 @@ Cosa fa da solo `docker compose up -d`:
 
 - Costruisce Edward: backend più pagina web compilata.
 - Avvia **SearXNG** e genera la sua chiave segreta. SearXNG è raggiungibile solo da Edward e dal Pi stesso (`127.0.0.1:8888`).
-- Crea un **certificato HTTPS**, necessario per usare il microfono da telefono o PC. Se raggiungi il Pi con un altro nome o un IP fisso, aggiungili al `.env`, per esempio `CERT_HOSTS=raspberrypi.local,192.168.1.50`. Il certificato copre anche l'host di `PUBLIC_URL` e si rigenera da solo quando aggiungi nomi nuovi; in alternativa usa `HTTPS_CERT`/`HTTPS_KEY` tuoi. Se apri `http://` vieni rimandato automaticamente a `https://`.
+- Crea un **certificato HTTPS**, necessario per usare il microfono da telefono o PC. Se raggiungi il Pi con un altro nome o un IP fisso, aggiungili al `.env`, per esempio `CERT_HOSTS=edward.local,192.168.1.50`. Il certificato copre anche l'host di `PUBLIC_URL` e si rigenera da solo quando aggiungi nomi nuovi; in alternativa usa `HTTPS_CERT`/`HTTPS_KEY` tuoi. Se apri `http://` vieni rimandato automaticamente a `https://`.
 - Conserva calendario, giornali e token Netatmo nel volume `edward-data`, che sopravvive ad aggiornamenti e riavvii.
 
 Il job notturno gira dentro il server (node-cron), quindi non serve configurare crontab. L'orario si imposta in `.env` con `NIGHTLY_CRON`; il default è `30 5 * * *`, cioè le 05:30.
 
-Per usare un'altra porta metti `EDWARD_PORT=8443` nel `.env`. Edward userà quella al posto della 3000.
+Con Docker Edward risponde sulle porte standard: **443** (https) e **80** (rimanda a https), quindi l'indirizzo non ha bisogno di `:porta`. Se quelle porte sono già occupate metti per esempio `EDWARD_PORT=8443` e `EDWARD_HTTP_PORT=8080` nel `.env`, e aggiungi la porta a `PUBLIC_URL`.
 
 ### Senza Docker
 
@@ -101,7 +108,7 @@ Il browser concede il microfono solo su **https://** oppure su **localhost**.
 - Se usi Edward **sul Raspberry stesso** (http://localhost:3000) funziona subito.
 - Se lo apri **da telefono o PC** sulla rete di casa serve HTTPS. Con `HTTPS=auto` (il default con Docker) Edward crea da solo un certificato al primo avvio. Senza Docker puoi anche generarlo con `npm run certs --workspace backend` e copiare le righe stampate nel `.env`.
 
-  Al primo accesso a `https://<ip>:3000` il browser mostrerà un avviso sul certificato self-signed: accettalo.
+  Al primo accesso a `https://<ip>` il browser mostrerà un avviso sul certificato self-signed: accettalo.
 
 ## Voce: due modalità
 
@@ -194,7 +201,7 @@ Lo **Smarther2** usato con l'app Home + Control si comanda tramite l'API Netatmo
      - L'access token non serve: basta il refresh token.
      - Ogni volta che rigeneri il token, Netatmo **revoca quello precedente**. Generalo una volta sola e copialo subito.
      - Al primo uso Netatmo sostituisce il token con uno nuovo, che resta nel database di *quel* computer. Se lo provi sul Mac e poi sposti Edward sul Raspberry, copia anche `backend/data/edward.db`, oppure genera un token nuovo e mettilo nel `.env` del Pi. Edward riconosce il token nuovo e lo usa al posto del vecchio.
-   - **Login dal sito.** Nell'app Netatmo imposta come *redirect URI* `PUBLIC_URL` + `/api/thermostat/callback`, per esempio `http://raspberrypi.local:3000/api/thermostat/callback`. Poi in Impostazioni → Termostato premi **Collega il termostato**.
+   - **Login dal sito.** Nell'app Netatmo imposta come *redirect URI* `PUBLIC_URL` + `/api/thermostat/callback`, per esempio `https://edward.local/api/thermostat/callback`. Poi in Impostazioni → Termostato premi **Collega il termostato**.
 
 A voce puoi chiedere: *"che temperatura c'è in casa?"* (risposta istantanea), *"alza il riscaldamento a 21 gradi per due ore"*, *"rimetti il termostato sul programma"*, *"spegni il riscaldamento, parto per il weekend"* (antigelo), *"fai un boost di mezz'ora"*.
 

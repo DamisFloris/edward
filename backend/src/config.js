@@ -18,7 +18,7 @@ export const config = {
   httpsKey: env.HTTPS_KEY || "",
   // HTTPS=auto: se mancano HTTPS_CERT/KEY crea da solo un certificato self-signed (in data/certs)
   httpsAuto: env.HTTPS === "auto",
-  certHosts: (env.CERT_HOSTS || "raspberrypi.local").split(/[\s,]+/).filter(Boolean),
+  certHosts: (env.CERT_HOSTS || "edward.local").split(/[\s,]+/).filter(Boolean),
   nightlyCron: env.NIGHTLY_CRON || "30 5 * * *",
 
   anthropicConfigured: Boolean(env.ANTHROPIC_API_KEY || env.ANTHROPIC_AUTH_TOKEN),

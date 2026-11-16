@@ -1,7 +1,7 @@
 # Edward + SearXNG con un solo comando:
 #   cp .env.example .env && nano .env      (metti le tue chiavi API)
 #   docker compose up -d
-# Poi apri https://raspberrypi.local:3000 (accetta l'avviso sul certificato).
+# Poi apri https://edward.local (accetta l'avviso sul certificato).
 # Log: docker compose logs -f edward   ·   Aggiornare: git pull && docker compose up -d --build
 
 services:
@@ -16,9 +16,10 @@ services:
       PORT: 3000
       SEARXNG_URL: http://searxng:8080
       HTTPS: ${HTTPS:-auto}              # certificato self-signed creato al primo avvio
-      CERT_HOSTS: ${CERT_HOSTS:-raspberrypi.local}
+      CERT_HOSTS: ${CERT_HOSTS:-edward.local}
     ports:
-      - "${EDWARD_PORT:-3000}:3000"
+      - "${EDWARD_PORT:-443}:3000"        # https://<nome>, senza porta nell'indirizzo
+      - "${EDWARD_HTTP_PORT:-80}:3000"    # http://<nome> rimanda da solo a https://
     volumes:
       - edward-data:/app/backend/data    # calendario, giornali, token, certificati
     depends_on:
