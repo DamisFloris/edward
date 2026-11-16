@@ -71,7 +71,7 @@ Cosa fa da solo `docker compose up -d`:
 
 - Costruisce Edward: backend più pagina web compilata.
 - Avvia **SearXNG** e genera la sua chiave segreta. SearXNG è raggiungibile solo da Edward e dal Pi stesso (`127.0.0.1:8888`).
-- Crea un **certificato HTTPS**, necessario per usare il microfono da telefono o PC. Se raggiungi il Pi con un altro nome o un IP fisso, aggiungili al `.env`, per esempio `CERT_HOSTS=raspberrypi.local,192.168.1.50`. Poi cancella il volume per rigenerare il certificato, oppure usa `HTTPS_CERT`/`HTTPS_KEY` tuoi.
+- Crea un **certificato HTTPS**, necessario per usare il microfono da telefono o PC. Se raggiungi il Pi con un altro nome o un IP fisso, aggiungili al `.env`, per esempio `CERT_HOSTS=raspberrypi.local,192.168.1.50`. Il certificato copre anche l'host di `PUBLIC_URL` e si rigenera da solo quando aggiungi nomi nuovi; in alternativa usa `HTTPS_CERT`/`HTTPS_KEY` tuoi. Se apri `http://` vieni rimandato automaticamente a `https://`.
 - Conserva calendario, giornali e token Netatmo nel volume `edward-data`, che sopravvive ad aggiornamenti e riavvii.
 
 Il job notturno gira dentro il server (node-cron), quindi non serve configurare crontab. L'orario si imposta in `.env` con `NIGHTLY_CRON`; il default è `30 5 * * *`, cioè le 05:30.
